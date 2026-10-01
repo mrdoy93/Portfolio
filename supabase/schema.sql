@@ -52,6 +52,8 @@ create policy "admins can add projects" on public.projects for insert to authent
 create policy "admins can edit projects" on public.projects for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "admins can delete projects" on public.projects for delete to authenticated using (public.is_admin());
 
--- After signing up through Supabase Auth, run this once with your own email:
--- update public.profiles set role = 'admin' where email = 'your-email@example.com';
-
+-- After creating your user in Supabase Auth, run this once with your own email.
+-- This also creates the profile if the Auth user existed before this schema was installed:
+-- insert into public.profiles (id, email, role)
+-- select id, email, 'admin' from auth.users where email = 'your-email@example.com'
+-- on conflict (id) do update set role = 'admin', email = excluded.email;
