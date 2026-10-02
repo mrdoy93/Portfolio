@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { Arrow } from "@/components/icons";
 import { ProjectCard } from "@/components/project-card";
+import { IntroVideo } from "@/components/intro-video";
 import { getFeaturedProjects } from "@/lib/projects";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -23,16 +24,14 @@ export default async function Home() {
             <Link className="button" href="/work">Explore selected work <Arrow /></Link>
             <Link className="text-link" href="/contact">Start a project <span>↗</span></Link>
           </div>
-          <div className="hero-orbit" aria-hidden="true">
-            <div className="orbit-photo">
-              {settings.intro_video_url ? (
-                <video src={settings.intro_video_url} poster={settings.portrait_url || undefined} autoPlay muted loop playsInline preload="auto" />
-              ) : settings.portrait_url ? (
-                <img src={settings.portrait_url} alt="" />
-              ) : (
-                <span>RJC</span>
-              )}
-            </div>
+          <div className="hero-orbit">
+            {settings.intro_video_url ? (
+              <IntroVideo src={settings.intro_video_url} poster={settings.portrait_url || undefined} />
+            ) : (
+              <div className="orbit-photo" aria-hidden="true">
+                {settings.portrait_url ? <img src={settings.portrait_url} alt="" /> : <span>RJC</span>}
+              </div>
+            )}
             <p>Available for<br />select projects <b>↘</b></p>
           </div>
         </section>
