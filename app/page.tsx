@@ -22,7 +22,10 @@ export default async function Home() {
                 <span
                   key={`${letter}-${index}`}
                   className="hero-name-letter"
-                  style={{ "--letter-delay": `${index * 55}ms` } as CSSProperties}
+                  style={{
+                    "--letter-delay": `${index * 55}ms`,
+                    "--glow-delay": `${700 + index * 90}ms`,
+                  } as CSSProperties}
                 >
                   {letter === " " ? "\u00a0" : letter}
                 </span>
@@ -32,7 +35,10 @@ export default async function Home() {
                   <span
                     key={`${letter}-${index}`}
                     className="hero-name-letter"
-                    style={{ "--letter-delay": `${(index + 12) * 55}ms` } as CSSProperties}
+                    style={{
+                      "--letter-delay": `${(index + 12) * 55}ms`,
+                      "--glow-delay": `${700 + (index + 12) * 90}ms`,
+                    } as CSSProperties}
                   >
                     {letter}
                   </span>
