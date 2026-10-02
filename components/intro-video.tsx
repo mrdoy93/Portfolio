@@ -42,7 +42,7 @@ export function IntroVideo({ src, poster }: IntroVideoProps) {
 
   return (
     <>
-      <div className="orbit-photo">
+      <div className="orbit-photo orbit-video-frame">
         <video ref={videoRef} src={src} poster={poster} autoPlay muted={muted} playsInline preload="auto" />
       </div>
       <div className="intro-audio-control">
