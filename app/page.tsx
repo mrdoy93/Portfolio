@@ -18,7 +18,7 @@ export default async function Home() {
           <div className="eyebrow hero-tagline">Stories that <em>move</em> people. <i /></div>
           <h1 className="hero-name" aria-label="Rodolfo Jr. Cortez">
             <span className="hero-name-line" aria-hidden="true">
-              {Array.from("Rodolfo Jr. ").map((letter, index) => (
+              {Array.from("Rodolfo Jr. Cortez").map((letter, index) => (
                 <span
                   key={`${letter}-${index}`}
                   className="hero-name-letter"
@@ -30,20 +30,6 @@ export default async function Home() {
                   {letter === " " ? "\u00a0" : letter}
                 </span>
               ))}
-              <span className="hero-name-accent-word">
-                {Array.from("Cortez").map((letter, index) => (
-                  <span
-                    key={`${letter}-${index}`}
-                    className="hero-name-letter"
-                    style={{
-                      "--letter-delay": `${(index + 12) * 55}ms`,
-                      "--glow-delay": `${700 + (index + 12) * 90}ms`,
-                    } as CSSProperties}
-                  >
-                    {letter}
-                  </span>
-                ))}
-              </span>
             </span>
           </h1>
           <p className="hero-copy">I make thumb-stopping UGC and thoughtful digital experiences for brands with something real to say.</p>
