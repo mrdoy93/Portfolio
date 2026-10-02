@@ -16,8 +16,7 @@ export default async function Home() {
         <section className="hero">
           <div className="eyebrow hero-tagline">Stories that <em>move</em> people. <i /></div>
           <h1 className="hero-name" aria-label="Rodolfo Jr. Cortez">
-            <span className="hero-name-line" aria-hidden="true"><span className="hero-name-word">Rodolfo</span> <span className="hero-name-word">Jr.</span></span>
-            <span className="hero-name-line" aria-hidden="true"><span className="hero-name-word hero-name-accent">Cortez</span></span>
+            <span className="hero-name-line" aria-hidden="true"><span className="hero-name-word">Rodolfo</span> <span className="hero-name-word">Jr.</span> <span className="hero-name-word hero-name-accent">Cortez</span></span>
           </h1>
           <p className="hero-copy">I make thumb-stopping UGC and thoughtful digital experiences for brands with something real to say.</p>
           <div className="hero-actions">
