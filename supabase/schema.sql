@@ -27,6 +27,20 @@ create table if not exists public.projects (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.site_settings (
+  id text primary key default 'site',
+  portrait_url text,
+  portrait_path text,
+  updated_at timestamptz not null default now(),
+  constraint single_site_settings_row check (id = 'site')
+);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('portfolio-assets', 'portfolio-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 create or replace function public.create_profile_for_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -45,12 +59,33 @@ $$;
 
 alter table public.profiles enable row level security;
 alter table public.projects enable row level security;
+alter table public.site_settings enable row level security;
+
+drop policy if exists "users can see own profile" on public.profiles;
+drop policy if exists "anyone can read published projects" on public.projects;
+drop policy if exists "admins can add projects" on public.projects;
+drop policy if exists "admins can edit projects" on public.projects;
+drop policy if exists "admins can delete projects" on public.projects;
+drop policy if exists "anyone can read site settings" on public.site_settings;
+drop policy if exists "admins can add site settings" on public.site_settings;
+drop policy if exists "admins can edit site settings" on public.site_settings;
+drop policy if exists "public can view portfolio assets" on storage.objects;
+drop policy if exists "admins can upload portfolio assets" on storage.objects;
+drop policy if exists "admins can update portfolio assets" on storage.objects;
+drop policy if exists "admins can delete portfolio assets" on storage.objects;
 
 create policy "users can see own profile" on public.profiles for select to authenticated using (id = auth.uid());
 create policy "anyone can read published projects" on public.projects for select using (published = true or public.is_admin());
 create policy "admins can add projects" on public.projects for insert to authenticated with check (public.is_admin());
 create policy "admins can edit projects" on public.projects for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "admins can delete projects" on public.projects for delete to authenticated using (public.is_admin());
+create policy "anyone can read site settings" on public.site_settings for select using (true);
+create policy "admins can add site settings" on public.site_settings for insert to authenticated with check (public.is_admin());
+create policy "admins can edit site settings" on public.site_settings for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "public can view portfolio assets" on storage.objects for select using (bucket_id = 'portfolio-assets');
+create policy "admins can upload portfolio assets" on storage.objects for insert to authenticated with check (bucket_id = 'portfolio-assets' and public.is_admin());
+create policy "admins can update portfolio assets" on storage.objects for update to authenticated using (bucket_id = 'portfolio-assets' and public.is_admin()) with check (bucket_id = 'portfolio-assets' and public.is_admin());
+create policy "admins can delete portfolio assets" on storage.objects for delete to authenticated using (bucket_id = 'portfolio-assets' and public.is_admin());
 
 -- After creating your user in Supabase Auth, run this once with your own email.
 -- This also creates the profile if the Auth user existed before this schema was installed:

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { Project } from "@/lib/types";
-import { saveProject, signOut } from "./actions";
+import { removePortrait, savePortrait, saveProject, signOut } from "./actions";
 import { DeleteProjectButton } from "./delete-project-button";
 
 type FieldProps = {
@@ -179,8 +179,13 @@ export default async function AdminPage({
     .order("created_at", { ascending: false });
 
   const projects = (data || []) as Project[];
+  const { data: settings, error: settingsError } = await supabase
+    .from("site_settings")
+    .select("portrait_url")
+    .eq("id", "site")
+    .maybeSingle();
   const { error: actionError, edit } = await searchParams;
-  const error = actionError || projectsError?.message;
+  const error = actionError || projectsError?.message || settingsError?.message;
   const projectToEdit = edit ? projects.find((project) => project.id === edit) : undefined;
   const publishedCount = projects.filter((project) => project.published).length;
   const draftCount = projects.length - publishedCount;
@@ -200,6 +205,10 @@ export default async function AdminPage({
           <a className="active" href="#overview">
             <NavIcon>⌂</NavIcon>
             Overview
+          </a>
+          <a href="#profile">
+            <NavIcon>◎</NavIcon>
+            Profile photo
           </a>
           <a href="#projects">
             <NavIcon>▦</NavIcon>
@@ -282,6 +291,35 @@ export default async function AdminPage({
             </div>
           </section>
 
+          <section id="profile" className="admin-panel admin-profile-panel">
+            <div className="admin-section-heading">
+              <div>
+                <p className="admin-kicker">Identity</p>
+                <h2>Profile photo</h2>
+                <p>Upload the portrait shown in place of the RJC initials on your home and About pages.</p>
+              </div>
+            </div>
+            <div className="admin-profile-editor">
+              <div className="admin-profile-preview">
+                {settings?.portrait_url ? <img src={settings.portrait_url} alt="Current profile" /> : <span>RJC</span>}
+              </div>
+              <div className="admin-profile-controls">
+                <form action={savePortrait}>
+                  <label className="admin-field">
+                    Choose a photo
+                    <input name="portrait" type="file" accept="image/jpeg,image/png,image/webp" required />
+                  </label>
+                  <p>JPG, PNG, or WebP. Maximum 5 MB. A portrait-oriented image works best.</p>
+                  <button className="admin-primary-button">{settings?.portrait_url ? "Replace photo" : "Upload photo"}</button>
+                </form>
+                {settings?.portrait_url && (
+                  <form action={removePortrait}>
+                    <button className="admin-remove-photo">Remove photo</button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
           <section id="projects" className="admin-panel admin-projects-panel">
             <div className="admin-section-heading">
               <div>

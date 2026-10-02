@@ -226,3 +226,21 @@ a { color: inherit; text-decoration: none; } button, input, textarea, select { f
   .admin-project-thumb { width: 40px; height: 40px; flex-basis: 40px; }
   .admin-project-name small { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* Profile photo */
+.orbit-photo { overflow: hidden; }
+.orbit-photo img, .portrait-placeholder img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.portrait-placeholder { overflow: hidden; }
+.admin-profile-panel .admin-section-heading { margin-bottom: 22px; }
+.admin-profile-panel .admin-section-heading p:last-child { margin: 10px 0 0; color: var(--admin-muted); font-size: 13px; }
+.admin-profile-editor { display: flex; align-items: center; gap: 27px; }
+.admin-profile-preview { width: 132px; aspect-ratio: 1; display: grid; place-items: center; flex: 0 0 132px; overflow: hidden; border-radius: 50%; background: linear-gradient(145deg,#b7efff,#557c91 65%,#16232c); color: #071015; font: 600 25px var(--font-mono); letter-spacing: -2px; }
+.admin-profile-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.admin-profile-controls { flex: 1; }
+.admin-profile-controls form { margin: 0; }
+.admin-profile-controls .admin-field { max-width: 520px; margin-bottom: 8px; }
+.admin-profile-controls .admin-field input[type="file"] { padding: 9px; }
+.admin-profile-controls .admin-field input[type="file"]::file-selector-button { margin-right: 12px; padding: 8px 11px; border: 0; border-radius: 3px; color: #173642; background: #dff4fb; font: 600 10px var(--font-mono); cursor: pointer; }
+.admin-profile-controls p { margin: 0 0 17px; color: var(--admin-muted); font-size: 12px; }
+.admin-remove-photo { margin-top: 12px; padding: 0; border: 0; color: #a13d48; background: transparent; font: 600 10px var(--font-mono); text-decoration: underline; }
+@media (max-width: 600px) { .admin-profile-editor { align-items: flex-start; flex-direction: column; }.admin-profile-preview { width: 112px; flex-basis: 112px; }.admin-profile-controls { width: 100%; } }
