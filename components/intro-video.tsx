@@ -10,7 +10,7 @@ type IntroVideoProps = {
 export function IntroVideo({ src, poster }: IntroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const [volume, setVolume] = useState(0.8);
+  const [volume, setVolume] = useState(0.5);
 
   function toggleSound() {
     const video = videoRef.current;
@@ -43,7 +43,7 @@ export function IntroVideo({ src, poster }: IntroVideoProps) {
   return (
     <>
       <div className="orbit-photo">
-        <video ref={videoRef} src={src} poster={poster} autoPlay muted={muted} loop playsInline preload="auto" />
+        <video ref={videoRef} src={src} poster={poster} autoPlay muted={muted} playsInline preload="auto" />
       </div>
       <div className="intro-audio-control">
         <button type="button" onClick={toggleSound} aria-pressed={!muted}>
@@ -56,7 +56,7 @@ export function IntroVideo({ src, poster }: IntroVideoProps) {
             min="0"
             max="1"
             step="0.05"
-            value={muted ? 0 : volume}
+            value={volume}
             onChange={changeVolume}
             aria-label="Introduction video volume"
           />
