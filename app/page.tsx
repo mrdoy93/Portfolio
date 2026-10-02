@@ -25,7 +25,13 @@ export default async function Home() {
           </div>
           <div className="hero-orbit" aria-hidden="true">
             <div className="orbit-photo">
-              {settings.portrait_url ? <img src={settings.portrait_url} alt="" /> : <span>RJC</span>}
+              {settings.intro_video_url ? (
+                <video src={settings.intro_video_url} poster={settings.portrait_url || undefined} autoPlay muted loop playsInline preload="auto" />
+              ) : settings.portrait_url ? (
+                <img src={settings.portrait_url} alt="" />
+              ) : (
+                <span>RJC</span>
+              )}
             </div>
             <p>Available for<br />select projects <b>↘</b></p>
           </div>

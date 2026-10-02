@@ -244,3 +244,11 @@ a { color: inherit; text-decoration: none; } button, input, textarea, select { f
 .admin-profile-controls p { margin: 0 0 17px; color: var(--admin-muted); font-size: 12px; }
 .admin-remove-photo { margin-top: 12px; padding: 0; border: 0; color: #a13d48; background: transparent; font: 600 10px var(--font-mono); text-decoration: underline; }
 @media (max-width: 600px) { .admin-profile-editor { align-items: flex-start; flex-direction: column; }.admin-profile-preview { width: 112px; flex-basis: 112px; }.admin-profile-controls { width: 100%; } }
+
+/* Introduction video */
+.orbit-photo video { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 25%; }
+.admin-media-divider { height: 1px; margin: 28px 0; background: var(--admin-border); }
+.admin-video-preview { border-radius: 12px; background: #14242c; color: var(--admin-accent); }
+.admin-video-preview video { width: 100%; height: 100%; object-fit: cover; }
+.admin-upload-message { margin-top: 12px !important; color: #287b58 !important; }
+.admin-profile-controls button:disabled { cursor: wait; opacity: .65; }

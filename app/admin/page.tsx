@@ -4,6 +4,7 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { Project } from "@/lib/types";
 import { removePortrait, savePortrait, saveProject, signOut } from "./actions";
 import { DeleteProjectButton } from "./delete-project-button";
+import { IntroVideoUploader } from "./intro-video-uploader";
 
 type FieldProps = {
   name: string;
@@ -181,7 +182,7 @@ export default async function AdminPage({
   const projects = (data || []) as Project[];
   const { data: settings, error: settingsError } = await supabase
     .from("site_settings")
-    .select("portrait_url")
+    .select("portrait_url, portrait_path, intro_video_url, intro_video_path")
     .eq("id", "site")
     .maybeSingle();
   const { error: actionError, edit } = await searchParams;
@@ -208,7 +209,7 @@ export default async function AdminPage({
           </a>
           <a href="#profile">
             <NavIcon>◎</NavIcon>
-            Profile photo
+            Profile media
           </a>
           <a href="#projects">
             <NavIcon>▦</NavIcon>
@@ -295,8 +296,8 @@ export default async function AdminPage({
             <div className="admin-section-heading">
               <div>
                 <p className="admin-kicker">Identity</p>
-                <h2>Profile photo</h2>
-                <p>Upload the portrait shown in place of the RJC initials on your home and About pages.</p>
+                <h2>Profile media</h2>
+                <p>Use a portrait on your About page and an autoplaying introduction video on your homepage.</p>
               </div>
             </div>
             <div className="admin-profile-editor">
@@ -309,7 +310,7 @@ export default async function AdminPage({
                     Choose a photo
                     <input name="portrait" type="file" accept="image/jpeg,image/png,image/webp" required />
                   </label>
-                  <p>JPG, PNG, or WebP. Maximum 5 MB. A portrait-oriented image works best.</p>
+                  <p>JPG, PNG, or WebP. Maximum 5 MB. This remains your About-page portrait and video poster.</p>
                   <button className="admin-primary-button">{settings?.portrait_url ? "Replace photo" : "Upload photo"}</button>
                 </form>
                 {settings?.portrait_url && (
@@ -319,6 +320,12 @@ export default async function AdminPage({
                 )}
               </div>
             </div>
+            <div className="admin-media-divider" />
+            <IntroVideoUploader
+              currentUrl={settings?.intro_video_url || null}
+              currentPath={settings?.intro_video_path || null}
+              posterUrl={settings?.portrait_url || null}
+            />
           </section>
           <section id="projects" className="admin-panel admin-projects-panel">
             <div className="admin-section-heading">

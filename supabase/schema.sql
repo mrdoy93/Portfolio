@@ -31,16 +31,17 @@ create table if not exists public.site_settings (
   id text primary key default 'site',
   portrait_url text,
   portrait_path text,
+  intro_video_url text,
+  intro_video_path text,
   updated_at timestamptz not null default now(),
   constraint single_site_settings_row check (id = 'site')
 );
 
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('portfolio-assets', 'portfolio-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
-on conflict (id) do update set
-  public = excluded.public,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
+alter table public.site_settings add column if not exists intro_video_url text;
+alter table public.site_settings add column if not exists intro_video_path text;
+
+-- In Storage, create a public bucket named "portfolio-assets" with a 25 MB limit.
+-- Allow: image/jpeg, image/png, image/webp, video/mp4, and video/webm.
 create or replace function public.create_profile_for_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -69,6 +70,8 @@ drop policy if exists "admins can delete projects" on public.projects;
 drop policy if exists "anyone can read site settings" on public.site_settings;
 drop policy if exists "admins can add site settings" on public.site_settings;
 drop policy if exists "admins can edit site settings" on public.site_settings;
+drop policy if exists "admins can view portfolio bucket" on storage.buckets;
+drop policy if exists "admins can update portfolio bucket" on storage.buckets;
 drop policy if exists "public can view portfolio assets" on storage.objects;
 drop policy if exists "admins can upload portfolio assets" on storage.objects;
 drop policy if exists "admins can update portfolio assets" on storage.objects;
@@ -82,6 +85,8 @@ create policy "admins can delete projects" on public.projects for delete to auth
 create policy "anyone can read site settings" on public.site_settings for select using (true);
 create policy "admins can add site settings" on public.site_settings for insert to authenticated with check (public.is_admin());
 create policy "admins can edit site settings" on public.site_settings for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "admins can view portfolio bucket" on storage.buckets for select to authenticated using (id = 'portfolio-assets' and public.is_admin());
+create policy "admins can update portfolio bucket" on storage.buckets for update to authenticated using (id = 'portfolio-assets' and public.is_admin()) with check (id = 'portfolio-assets' and public.is_admin());
 create policy "public can view portfolio assets" on storage.objects for select using (bucket_id = 'portfolio-assets');
 create policy "admins can upload portfolio assets" on storage.objects for insert to authenticated with check (bucket_id = 'portfolio-assets' and public.is_admin());
 create policy "admins can update portfolio assets" on storage.objects for update to authenticated using (bucket_id = 'portfolio-assets' and public.is_admin()) with check (bucket_id = 'portfolio-assets' and public.is_admin());
