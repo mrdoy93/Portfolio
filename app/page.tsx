@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Arrow } from "@/components/icons";
 import { ProjectCard } from "@/components/project-card";
@@ -16,7 +17,28 @@ export default async function Home() {
         <section className="hero">
           <div className="eyebrow hero-tagline">Stories that <em>move</em> people. <i /></div>
           <h1 className="hero-name" aria-label="Rodolfo Jr. Cortez">
-            <span className="hero-name-line" aria-hidden="true"><span className="hero-name-word">Rodolfo</span> <span className="hero-name-word">Jr.</span> <span className="hero-name-word hero-name-accent">Cortez</span></span>
+            <span className="hero-name-line" aria-hidden="true">
+              {Array.from("Rodolfo Jr. ").map((letter, index) => (
+                <span
+                  key={`${letter}-${index}`}
+                  className="hero-name-letter"
+                  style={{ "--letter-delay": `${index * 55}ms` } as CSSProperties}
+                >
+                  {letter === " " ? "\u00a0" : letter}
+                </span>
+              ))}
+              <span className="hero-name-accent-word">
+                {Array.from("Cortez").map((letter, index) => (
+                  <span
+                    key={`${letter}-${index}`}
+                    className="hero-name-letter"
+                    style={{ "--letter-delay": `${(index + 12) * 55}ms` } as CSSProperties}
+                  >
+                    {letter}
+                  </span>
+                ))}
+              </span>
+            </span>
           </h1>
           <p className="hero-copy">I make thumb-stopping UGC and thoughtful digital experiences for brands with something real to say.</p>
           <div className="hero-actions">
