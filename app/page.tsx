@@ -2,13 +2,15 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Arrow } from "@/components/icons";
-import { ProjectCard } from "@/components/project-card";
+import { SortableProjectGallery } from "@/components/sortable-project-gallery";
 import { IntroVideo } from "@/components/intro-video";
-import { getFeaturedProjects } from "@/lib/projects";
+import { getPublishedProjects } from "@/lib/projects";
 import { getSiteSettings } from "@/lib/site-settings";
+import { PROJECT_CATEGORIES } from "@/lib/types";
+
 
 export default async function Home() {
-  const [projects, settings] = await Promise.all([getFeaturedProjects(), getSiteSettings()]);
+  const [projects, settings] = await Promise.all([getPublishedProjects(), getSiteSettings()]);
 
   return (
     <main>
@@ -48,14 +50,16 @@ export default async function Home() {
             <p>Available for<br />select projects <b>↘</b></p>
           </div>
         </section>
-        <section className="marquee" aria-label="Creative specialties"><span>UGC VIDEO</span><i>✦</i><span>CREATIVE STRATEGY</span><i>✦</i><span>DIGITAL PRODUCTS</span><i>✦</i></section>
-        <section className="section work-preview">
-          <div className="section-heading">
-            <div><p className="eyebrow">01 — Selected work</p><h2>Made to be<br /><em>remembered.</em></h2></div>
-            <Link className="text-link" href="/work">See all work <Arrow /></Link>
-          </div>
-          <div className="projects-grid">{projects.map((project, index) => <ProjectCard key={project.id} project={project} priority={index === 0} />)}</div>
-        </section>
+        <div className="category-table">
+          <section className="marquee" aria-label="Project categories">
+            {PROJECT_CATEGORIES.map((category) => (
+              <Link key={category} href={`/work?category=${encodeURIComponent(category)}`}>
+                <span>{category}</span><i aria-hidden="true">✦</i>
+              </Link>
+            ))}
+          </section>
+          <SortableProjectGallery projects={projects} />
+        </div>
         <section className="statement">
           <p className="eyebrow">How I work</p>
           <h2>Equal parts creative instinct <i>and</i> thoughtful execution.</h2>

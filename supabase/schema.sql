@@ -12,7 +12,7 @@ create table if not exists public.projects (
   slug text not null unique,
   excerpt text not null,
   description text not null,
-  kind text not null check (kind in ('UGC Video', 'Technical', 'Creative')),
+  kind text not null check (kind in ('AI Videos', 'AI Images', 'Product Promotions', 'Projects', 'Hobbies')),
   client text,
   year text not null,
   role text not null,
@@ -20,6 +20,7 @@ create table if not exists public.projects (
   tools text[] not null default '{}',
   video_embed_url text,
   thumbnail_url text,
+  thumbnail_path text,
   featured boolean not null default false,
   published boolean not null default false,
   published_at timestamptz,
@@ -37,6 +38,17 @@ create table if not exists public.site_settings (
   constraint single_site_settings_row check (id = 'site')
 );
 
+alter table public.projects add column if not exists thumbnail_path text;
+alter table public.projects drop constraint if exists projects_kind_check;
+update public.projects
+set kind = case kind
+  when 'UGC Video' then 'AI Videos'
+  when 'Technical' then 'Projects'
+  when 'Creative' then 'AI Images'
+  else kind
+end;
+alter table public.projects add constraint projects_kind_check
+  check (kind in ('AI Videos', 'AI Images', 'Product Promotions', 'Projects', 'Hobbies'));
 alter table public.site_settings add column if not exists intro_video_url text;
 alter table public.site_settings add column if not exists intro_video_path text;
 

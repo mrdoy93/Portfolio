@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import type { Project } from "@/lib/types";
+import { PROJECT_CATEGORIES, type Project } from "@/lib/types";
 import { removePortrait, savePortrait, saveProject, signOut } from "./actions";
 import { DeleteProjectButton } from "./delete-project-button";
 import { IntroVideoUploader } from "./intro-video-uploader";
@@ -39,7 +39,7 @@ function Field({
 
 function ProjectForm({ project }: { project?: Project }) {
   return (
-    <form action={saveProject} className="admin-form">
+    <form action={saveProject} className="admin-form" encType="multipart/form-data">
       <input type="hidden" name="id" value={project?.id || ""} />
       <div className="form-grid">
         <Field
@@ -56,11 +56,9 @@ function ProjectForm({ project }: { project?: Project }) {
           placeholder="Created from the title if empty"
         />
         <label className="admin-field">
-          Type
-          <select name="kind" defaultValue={project?.kind || "UGC Video"}>
-            <option>UGC Video</option>
-            <option>Technical</option>
-            <option>Creative</option>
+          Category
+          <select name="kind" defaultValue={project?.kind || PROJECT_CATEGORIES[0]}>
+            {PROJECT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
           </select>
         </label>
         <Field
@@ -110,9 +108,19 @@ function ProjectForm({ project }: { project?: Project }) {
           value={project?.video_embed_url || ""}
           placeholder="Paste a watch, share, Shorts, Vimeo, or embed URL"
         />
+        <label className="admin-field admin-thumbnail-field">
+          Upload thumbnail
+          <input name="thumbnail_file" type="file" accept="image/jpeg,image/png,image/webp" />
+          <small>JPG, PNG, or WebP up to 5 MB. The image will be stored under the selected category.</small>
+          {project?.thumbnail_url && (
+            <span className="admin-thumbnail-preview">
+              <img src={project.thumbnail_url} alt={`Current thumbnail for ${project.title}`} />
+            </span>
+          )}
+        </label>
         <Field
           name="thumbnail_url"
-          label="Thumbnail URL"
+          label="Thumbnail URL (optional alternative)"
           type="url"
           value={project?.thumbnail_url || ""}
           placeholder="https://..."
@@ -347,7 +355,7 @@ export default async function AdminPage({
               <div className="admin-project-list">
                 {projects.map((project) => (
                   <article key={project.id} className="admin-project-row">
-                    <span className={`admin-project-thumb admin-project-thumb-${project.kind.toLowerCase().replace(" ", "-")}`}>
+                    <span className={`admin-project-thumb admin-project-thumb-${project.kind.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}>
                       {project.thumbnail_url ? <img src={project.thumbnail_url} alt="" /> : project.title.slice(0, 1)}
                     </span>
                     <span className="admin-project-name">
