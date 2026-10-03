@@ -1,4 +1,12 @@
-export type ProjectKind = "UGC Video" | "Technical" | "Creative";
+export const PROJECT_CATEGORIES = [
+  "AI Videos",
+  "AI Images",
+  "Product Promotions",
+  "Projects",
+  "Hobbies",
+] as const;
+
+export type ProjectKind = (typeof PROJECT_CATEGORIES)[number];
 
 export type Project = {
   id: string;
@@ -14,8 +22,8 @@ export type Project = {
   tools: string[];
   video_embed_url: string | null;
   thumbnail_url: string | null;
+  thumbnail_path: string | null;
   featured: boolean;
   published: boolean;
   published_at: string | null;
 };
-
