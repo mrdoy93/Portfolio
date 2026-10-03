@@ -22,11 +22,34 @@ export async function saveProject(form: FormData) {
   const supabase = await createClient();
   const id = value(form, "id");
   const title = value(form, "title");
-  const slug = value(form, "slug") || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  if (!title) projectError("Add a project title.", id);
+  const requestedSlug = (value(form, "slug") || title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `project-${Date.now()}`;
   const kind = value(form, "kind");
 
   if (!PROJECT_CATEGORIES.includes(kind as ProjectKind)) {
     projectError("Choose a valid project category.", id);
+  }
+  const year = value(form, "year") || String(new Date().getFullYear());
+  const role = value(form, "role") || "Creator";
+  const excerpt = value(form, "excerpt") || title + " - " + kind;
+  const description = value(form, "description") || excerpt;
+
+  const { data: matchingSlugs, error: slugError } = await supabase
+    .from("projects")
+    .select("id, slug")
+    .like("slug", `${requestedSlug}%`);
+  if (slugError) projectError(slugError.message, id);
+
+  const occupiedSlugs = new Set(
+    (matchingSlugs || [])
+      .filter((project) => project.id !== id)
+      .map((project) => project.slug),
+  );
+  let slug = requestedSlug;
+  let slugSuffix = 2;
+  while (occupiedSlugs.has(slug)) {
+    slug = `${requestedSlug}-${slugSuffix}`;
+    slugSuffix += 1;
   }
 
   const thumbnail = form.get("thumbnail_file");
@@ -38,27 +61,69 @@ export async function saveProject(form: FormData) {
     projectError("The project thumbnail must be smaller than 5 MB.", id);
   }
 
+  const projectMedia = form.get("project_media_file");
+  const hasProjectMedia = projectMedia instanceof File && projectMedia.size > 0;
+  const selectedMediaKind = value(form, "project_media_kind") || (hasProjectMedia ? projectMedia.type.split("/")[0] : "video");
+  if (hasProjectMedia && !projectMediaTypes[projectMedia.type]) {
+    projectError("Upload a JPG, PNG, WebP, MP4, or WebM project file.", id);
+  }
+  if (hasProjectMedia && selectedMediaKind === "image" && !projectMedia.type.startsWith("image/")) {
+    projectError("Choose Photo / image when uploading JPG, PNG, or WebP files.", id);
+  }
+  if (hasProjectMedia && selectedMediaKind === "video" && !projectMedia.type.startsWith("video/")) {
+    projectError("Choose Video when uploading MP4 or WebM files.", id);
+  }
+  if (hasProjectMedia && !["image", "video"].includes(selectedMediaKind)) {
+    projectError("Choose Video or Photo / image for the uploaded project file.", id);
+  }
+  if (hasProjectMedia && projectMedia.size > 25 * 1024 * 1024) {
+    projectError("The project file must be smaller than 25 MB.", id);
+  }
+
   const { data: current, error: currentError } = id
-    ? await supabase.from("projects").select("thumbnail_url, thumbnail_path").eq("id", id).maybeSingle()
+    ? await supabase.from("projects").select("thumbnail_url, thumbnail_path, project_media_url, project_media_path, project_media_type").eq("id", id).maybeSingle()
     : { data: null, error: null };
   if (currentError) projectError(currentError.message, id);
 
   const manualThumbnailUrl = value(form, "thumbnail_url") || null;
   let thumbnailUrl = manualThumbnailUrl;
   let thumbnailPath = manualThumbnailUrl === current?.thumbnail_url ? current?.thumbnail_path || null : null;
-  let uploadedPath: string | null = null;
+  let uploadedThumbnailPath: string | null = null;
 
   if (hasThumbnail) {
     const extension = imageTypes[thumbnail.type];
-    uploadedPath = `projects/${categoryFolder(kind as ProjectKind)}/${slug}-${Date.now()}.${extension}`;
+    uploadedThumbnailPath = `projects/${categoryFolder(kind as ProjectKind)}/thumbnails/${slug}-${Date.now()}.${extension}`;
     const { error: uploadError } = await supabase.storage
       .from("portfolio-assets")
-      .upload(uploadedPath, thumbnail, { contentType: thumbnail.type, upsert: false });
+      .upload(uploadedThumbnailPath, thumbnail, { contentType: thumbnail.type, upsert: false });
     if (uploadError) projectError(uploadError.message, id);
 
-    const { data: publicImage } = supabase.storage.from("portfolio-assets").getPublicUrl(uploadedPath);
+    const { data: publicImage } = supabase.storage.from("portfolio-assets").getPublicUrl(uploadedThumbnailPath);
     thumbnailUrl = publicImage.publicUrl;
-    thumbnailPath = uploadedPath;
+    thumbnailPath = uploadedThumbnailPath;
+  }
+
+  const removeProjectMedia = form.get("remove_project_media") === "on";
+  let projectMediaUrl = removeProjectMedia ? null : current?.project_media_url || null;
+  let projectMediaPath = removeProjectMedia ? null : current?.project_media_path || null;
+  let projectMediaType = removeProjectMedia ? null : current?.project_media_type || null;
+  let uploadedProjectMediaPath: string | null = null;
+
+  if (hasProjectMedia) {
+    const extension = projectMediaTypes[projectMedia.type];
+    uploadedProjectMediaPath = `projects/${categoryFolder(kind as ProjectKind)}/media/${slug}-${Date.now()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from("portfolio-assets")
+      .upload(uploadedProjectMediaPath, projectMedia, { contentType: projectMedia.type, upsert: false });
+    if (uploadError) {
+      if (uploadedThumbnailPath) await supabase.storage.from("portfolio-assets").remove([uploadedThumbnailPath]);
+      projectError(uploadError.message, id);
+    }
+
+    const { data: publicMedia } = supabase.storage.from("portfolio-assets").getPublicUrl(uploadedProjectMediaPath);
+    projectMediaUrl = publicMedia.publicUrl;
+    projectMediaPath = uploadedProjectMediaPath;
+    projectMediaType = projectMedia.type;
   }
 
   const project = {
@@ -66,11 +131,14 @@ export async function saveProject(form: FormData) {
     slug,
     kind,
     client: value(form, "client") || null,
-    year: value(form, "year"),
-    role: value(form, "role"),
-    excerpt: value(form, "excerpt"),
-    description: value(form, "description"),
+    year,
+    role,
+    excerpt,
+    description,
     video_embed_url: toVideoEmbedUrl(value(form, "video_embed_url")),
+    project_media_url: projectMediaUrl,
+    project_media_path: projectMediaPath,
+    project_media_type: projectMediaType,
     thumbnail_url: thumbnailUrl,
     thumbnail_path: thumbnailPath,
     deliverables: list(form, "deliverables"),
@@ -80,32 +148,49 @@ export async function saveProject(form: FormData) {
     published_at: new Date().toISOString(),
   };
 
-  const { error } = id
+  let saveResult = id
     ? await supabase.from("projects").update(project).eq("id", id)
     : await supabase.from("projects").insert(project);
 
-  if (error) {
-    if (uploadedPath) await supabase.storage.from("portfolio-assets").remove([uploadedPath]);
-    projectError(error.message, id);
+  let slugRetry = 0;
+  while (
+    saveResult.error?.code === "23505" &&
+    saveResult.error.message.includes("projects_slug_key") &&
+    slugRetry < 3
+  ) {
+    slugRetry += 1;
+    slug = `${requestedSlug}-${Date.now().toString(36)}-${slugRetry}`;
+    project.slug = slug;
+    saveResult = id
+      ? await supabase.from("projects").update(project).eq("id", id)
+      : await supabase.from("projects").insert(project);
   }
 
-  if (current?.thumbnail_path && current.thumbnail_path !== thumbnailPath) {
-    await supabase.storage.from("portfolio-assets").remove([current.thumbnail_path]);
+  if (saveResult.error) {
+    const uploadedPaths = [uploadedThumbnailPath, uploadedProjectMediaPath].filter((path): path is string => Boolean(path));
+    if (uploadedPaths.length > 0) await supabase.storage.from("portfolio-assets").remove(uploadedPaths);
+    projectError(saveResult.error.message, id);
   }
+
+  const replacedPaths = [
+    current?.thumbnail_path && current.thumbnail_path !== thumbnailPath ? current.thumbnail_path : null,
+    current?.project_media_path && current.project_media_path !== projectMediaPath ? current.project_media_path : null,
+  ].filter((path): path is string => Boolean(path));
+  if (replacedPaths.length > 0) await supabase.storage.from("portfolio-assets").remove(replacedPaths);
 
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath(`/work/${slug}`);
   redirect("/admin#projects");
 }
-
 export async function deleteProject(form: FormData) {
   const supabase = await createClient();
   const id = value(form, "id");
-  const { data: current } = await supabase.from("projects").select("slug, thumbnail_path").eq("id", id).maybeSingle();
+  const { data: current } = await supabase.from("projects").select("slug, thumbnail_path, project_media_path").eq("id", id).maybeSingle();
   const { error } = await supabase.from("projects").delete().eq("id", id);
   if (error) redirect(`/admin?error=${encodeURIComponent(error.message)}#projects`);
-  if (current?.thumbnail_path) await supabase.storage.from("portfolio-assets").remove([current.thumbnail_path]);
+  const storedPaths = [current?.thumbnail_path, current?.project_media_path].filter((path): path is string => Boolean(path));
+  if (storedPaths.length > 0) await supabase.storage.from("portfolio-assets").remove(storedPaths);
   revalidatePath("/");
   revalidatePath("/work");
   if (current?.slug) revalidatePath(`/work/${current.slug}`);
@@ -117,6 +202,13 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+const projectMediaTypes: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+};
 const imageTypes: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",

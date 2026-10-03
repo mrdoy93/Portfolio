@@ -5,6 +5,10 @@ import { PROJECT_CATEGORIES, type Project } from "@/lib/types";
 import { removePortrait, savePortrait, saveProject, signOut } from "./actions";
 import { DeleteProjectButton } from "./delete-project-button";
 import { IntroVideoUploader } from "./intro-video-uploader";
+import { ProjectMediaPicker } from "./project-media-picker";
+import { QuickProjectCreator } from "./quick-project-creator";
+import { ClearEditQuery } from "./clear-edit-query";
+import { EditProjectLink } from "./edit-project-link";
 
 type FieldProps = {
   name: string;
@@ -39,7 +43,7 @@ function Field({
 
 function ProjectForm({ project }: { project?: Project }) {
   return (
-    <form action={saveProject} className="admin-form" encType="multipart/form-data">
+    <form action={saveProject} className="admin-form">
       <input type="hidden" name="id" value={project?.id || ""} />
       <div className="form-grid">
         <Field
@@ -107,6 +111,12 @@ function ProjectForm({ project }: { project?: Project }) {
           type="url"
           value={project?.video_embed_url || ""}
           placeholder="Paste a watch, share, Shorts, Vimeo, or embed URL"
+        />
+        <ProjectMediaPicker
+          currentUrl={project?.project_media_url || null}
+          currentType={project?.project_media_type || null}
+          title={project?.title || "New project"}
+          mediaKind={project?.project_media_type?.startsWith("image/") || project?.kind === "AI Images" ? "image" : "video"}
         />
         <label className="admin-field admin-thumbnail-field">
           Upload thumbnail
@@ -211,20 +221,20 @@ export default async function AdminPage({
 
         <nav className="admin-nav" aria-label="Dashboard navigation">
           <p>Workspace</p>
-          <a className="active" href="#overview">
+          <a className="active" href="/admin?section=overview#overview">
             <NavIcon>⌂</NavIcon>
             Overview
           </a>
-          <a href="#profile">
+          <a href="/admin?section=profile#profile">
             <NavIcon>◎</NavIcon>
             Profile media
           </a>
-          <a href="#projects">
+          <a href="/admin?section=projects#projects">
             <NavIcon>▦</NavIcon>
             Projects
             <span className="admin-nav-count">{projects.length}</span>
           </a>
-          <a className="admin-nav-create" href="#new-project">
+          <a className="admin-nav-create" href="/admin?section=new-project#new-project">
             <NavIcon>＋</NavIcon>
             New project
           </a>
@@ -270,7 +280,7 @@ export default async function AdminPage({
                 <h1>Welcome back, {displayName}.</h1>
                 <p>Manage your portfolio and keep your best work up to date.</p>
               </div>
-              <a className="admin-primary-button" href="#new-project">
+              <a className="admin-primary-button" href="/admin?section=new-project#new-project">
                 <span aria-hidden="true">＋</span>
                 New project
               </a>
@@ -349,7 +359,7 @@ export default async function AdminPage({
                 <span aria-hidden="true">◇</span>
                 <h3>No projects yet</h3>
                 <p>Create your first project and publish it when it is ready.</p>
-                <a href="#new-project">Create a project →</a>
+                <a href="/admin?section=new-project#new-project">Create a project →</a>
               </div>
             ) : (
               <div className="admin-project-list">
@@ -372,9 +382,7 @@ export default async function AdminPage({
                           View
                         </Link>
                       )}
-                      <Link className="admin-action-button is-edit" href={`/admin?edit=${encodeURIComponent(project.id)}#edit-project`}>
-                        Edit
-                      </Link>
+                      <EditProjectLink id={project.id} />
                       <DeleteProjectButton id={project.id} title={project.title} />
                     </div>
                   </article>
@@ -385,6 +393,7 @@ export default async function AdminPage({
 
           {projectToEdit && (
             <section id="edit-project" className="admin-panel admin-edit-project">
+              <ClearEditQuery projectId={projectToEdit.id} />
               <div className="admin-section-heading">
                 <div>
                   <p className="admin-kicker">Update</p>
@@ -402,11 +411,11 @@ export default async function AdminPage({
               <div>
                 <p className="admin-kicker">Create</p>
                 <h2>New project</h2>
-                <p>Add the details now. You can keep it as a draft until it is ready.</p>
+                <p>Choose a video or image window and add only the essential details.</p>
               </div>
-              <span className="admin-step">01 / Details</span>
+              <span className="admin-step">Quick upload</span>
             </div>
-            <ProjectForm />
+            <QuickProjectCreator defaultYear={String(new Date().getFullYear())} />
           </section>
         </div>
       </div>

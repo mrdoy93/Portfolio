@@ -19,6 +19,9 @@ create table if not exists public.projects (
   deliverables text[] not null default '{}',
   tools text[] not null default '{}',
   video_embed_url text,
+  project_media_url text,
+  project_media_path text,
+  project_media_type text,
   thumbnail_url text,
   thumbnail_path text,
   featured boolean not null default false,
@@ -39,6 +42,9 @@ create table if not exists public.site_settings (
 );
 
 alter table public.projects add column if not exists thumbnail_path text;
+alter table public.projects add column if not exists project_media_url text;
+alter table public.projects add column if not exists project_media_path text;
+alter table public.projects add column if not exists project_media_type text;
 alter table public.projects drop constraint if exists projects_kind_check;
 update public.projects
 set kind = case kind
