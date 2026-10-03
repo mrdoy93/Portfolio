@@ -15,7 +15,7 @@ export default async function Home() {
       <div className="shell">
         <SiteHeader />
         <section className="hero">
-          <div className="eyebrow hero-tagline">Stories that <em>move</em> people. <i /></div>
+          <div className="eyebrow hero-tagline">Hello! I&apos;m -</div>
           <h1 className="hero-name" aria-label="Rodolfo Jr. Cortez">
             <span className="hero-name-line" aria-hidden="true">
               {Array.from("Rodolfo Jr. Cortez").map((letter, index) => (
@@ -32,7 +32,7 @@ export default async function Home() {
               ))}
             </span>
           </h1>
-          <p className="hero-copy">I make thumb-stopping UGC and thoughtful digital experiences for brands with something real to say.</p>
+          <p className="hero-copy">I am a Computer Engineering graduate with hands-on experience in programming, software development, and building practical digital solutions. I am also exploring AI-powered content creation, combining technology and creativity to produce innovative advertisements, cinematic videos, and digital projects.</p>
           <div className="hero-actions">
             <Link className="button" href="/work">Explore selected work <Arrow /></Link>
             <Link className="text-link" href="/contact">Start a project <span>↗</span></Link>
