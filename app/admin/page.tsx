@@ -2,13 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { PROJECT_CATEGORIES, type Project } from "@/lib/types";
-import { removePortrait, savePortrait, saveProject, signOut } from "./actions";
+import { removePortrait, saveProject, signOut } from "./actions";
 import { DeleteProjectButton } from "./delete-project-button";
 import { IntroVideoUploader } from "./intro-video-uploader";
 import { ProjectMediaPicker } from "./project-media-picker";
 import { QuickProjectCreator } from "./quick-project-creator";
 import { ClearEditQuery } from "./clear-edit-query";
 import { EditProjectLink } from "./edit-project-link";
+import { PortraitUploader } from "./portrait-uploader";
 
 type FieldProps = {
   name: string;
@@ -319,18 +320,9 @@ export default async function AdminPage({
               </div>
             </div>
             <div className="admin-profile-editor">
-              <div className="admin-profile-preview">
-                {settings?.portrait_url ? <img src={settings.portrait_url} alt="Current profile" /> : <span>RJC</span>}
-              </div>
+              <PortraitUploader currentUrl={settings?.portrait_url || null} />
               <div className="admin-profile-controls">
-                <form action={savePortrait}>
-                  <label className="admin-field">
-                    Choose a photo
-                    <input name="portrait" type="file" accept="image/jpeg,image/png,image/webp" required />
-                  </label>
-                  <p>JPG, PNG, or WebP. Maximum 5 MB. This remains your About-page portrait and video poster.</p>
-                  <button className="admin-primary-button">{settings?.portrait_url ? "Replace photo" : "Upload photo"}</button>
-                </form>
+                <p>Click the portrait to upload a JPG, PNG, or WebP image up to 5 MB. It is used on your About page and as the homepage video poster.</p>
                 {settings?.portrait_url && (
                   <form action={removePortrait}>
                     <button className="admin-remove-photo">Remove photo</button>

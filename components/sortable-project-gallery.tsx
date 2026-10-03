@@ -34,11 +34,13 @@ export function SortableProjectGallery({ projects }: { projects: Project[] }) {
             return (
               <section key={category} className="category-column" aria-label={`${category} projects`}>
                 <div className="category-thumbnail-list">
-                  {categoryProjects.length > 0 ? categoryProjects.map((project) => (
+                  {categoryProjects.length > 0 ? categoryProjects.map((project) => {
+                    const thumbnail = project.thumbnail_url || (project.project_media_type?.startsWith("image/") ? project.project_media_url : null);
+                    return (
                     <Link key={project.id} className="category-thumbnail" href={`/work/${project.slug}`}>
                       <span className="category-thumbnail-image">
-                        {project.thumbnail_url ? (
-                          <img src={project.thumbnail_url} alt="" />
+                        {thumbnail ? (
+                          <img src={thumbnail} alt="" />
                         ) : (
                           <span aria-hidden="true">{project.title.slice(0, 1)}</span>
                         )}
@@ -48,7 +50,8 @@ export function SortableProjectGallery({ projects }: { projects: Project[] }) {
                         <small>{project.year}</small>
                       </span>
                     </Link>
-                  )) : (
+                    );
+                  }) : (
                     <span className="category-empty">No uploads yet</span>
                   )}
                 </div>

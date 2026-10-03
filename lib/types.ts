@@ -21,6 +21,9 @@ export type Project = {
   deliverables: string[];
   tools: string[];
   video_embed_url: string | null;
+  project_media_url: string | null;
+  project_media_path: string | null;
+  project_media_type: string | null;
   thumbnail_url: string | null;
   thumbnail_path: string | null;
   featured: boolean;
