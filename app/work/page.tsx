@@ -30,12 +30,13 @@ export default async function WorkPage({
         <div className="filter-row">
           <span>{selectedCategory || "All work"} <b>({visibleProjects.length})</b></span>
           <nav className="category-filter" aria-label="Filter projects by category">
-            <Link className={!selectedCategory ? "active" : undefined} href="/work">All</Link>
+            <Link className={!selectedCategory ? "active" : undefined} href="/work" scroll={false}>All</Link>
             {PROJECT_CATEGORIES.map((category) => (
               <Link
                 key={category}
                 className={selectedCategory === category ? "active" : undefined}
                 href={`/work?category=${encodeURIComponent(category)}`}
+                scroll={false}
               >
                 {category}
               </Link>
