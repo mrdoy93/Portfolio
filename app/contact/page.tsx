@@ -17,7 +17,10 @@ export default function ContactPage() {
           </div>
 
           <div className="contact-signal" aria-hidden="true">
-            <div className="contact-orbit"><span /></div>
+            <div className="contact-orbit">
+              <span />
+              <i className="contact-detection" />
+            </div>
             <p>Open to ideas<br />Philippines <b>↘</b></p>
           </div>
         </div>

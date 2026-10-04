@@ -10,7 +10,7 @@ export default async function AboutPage() {
     <main className="shell">
       <SiteHeader />
       <section className="about">
-        <p className="eyebrow">About Rodolfo</p>
+        <p className="eyebrow">About me</p>
         <h1>Curious by nature.<br /><em>Deliberate</em> by design.</h1>
         <div className="about-grid">
           <div className="portrait-placeholder">
